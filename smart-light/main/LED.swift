@@ -33,7 +33,11 @@ final class LED {
     didSet {
       switch color {
       case .hueSaturation(let hue, let saturation):
-        led_driver_set_hue(handle, UInt16(hue))
+        // Correct for R/G swap: Waveshare ESP32-C6 Zero WS2812 expects GRB
+        // but the driver sends RGB. Mirroring hue around the 60° axis swaps
+        // red and green while keeping blue unchanged.
+        let correctedHue = (120 - hue + 360) % 360
+        led_driver_set_hue(handle, UInt16(correctedHue))
         led_driver_set_saturation(handle, UInt8(saturation))
       case .temperature(let temperature):
         led_driver_set_temperature(handle, UInt32(temperature))
