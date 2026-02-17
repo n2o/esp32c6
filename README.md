@@ -1,87 +1,62 @@
 # Swift Matter Examples
 
-Build a Matter accessory using Embedded Swift
+Build a Matter accessory using Embedded Swift.
 
-## Overview
+Forked from [swiftlang/swift-matter-examples](https://github.com/swiftlang/swift-matter-examples). This fork targets the [Waveshare ESP32-C6 Zero](https://www.waveshare.com/esp32-c6-zero.htm) and adds new examples beyond the original Apple smart-light demo.
 
-<!-- Image -->
+## Examples
 
-This repository contains an example simple Embedded Swift application that implements a Matter smart light accessory and can be used from HomeKit. The examples use an ESP32-C6 or ESP32-C3 (RISC-V) microcontroller and build on top of the ESP-IDF and ESP-Matter SDKs.
+### smart-light
 
-> [!NOTE]
-> This repository is associated with WWDC24 session 10197: [Go small with Embedded Swift](https://developer.apple.com/wwdc24/10197).
+The original Apple example. Implements a Matter smart light accessory using the onboard WS2812 RGB LED on an ESP32-C6. Supports on/off, brightness, and color control via Apple Home.
 
-#### Embedded Swift
+### booknook
 
-Embedded Swift is a subset of Swift designed for constrained environments, such as embedded devices, kernel code, and other low-level systems. It includes most Swift language features, like generics, value and reference types, optionals, error handling, and more. Embedded Swift introduces the safety and expressivity of Swift to environments usually dominated by C or C++ code. To learn more, see [A Vision for Embedded Swift](https://github.com/swiftlang/swift-evolution/blob/main/visions/embedded-swift.md).
+Controls ambient LEDs inside a BookNook (a decorative miniature bookshelf insert) via Apple Home. Uses a Waveshare ESP32-C6 Zero to replace the original battery-powered touch switch. LEDs are connected directly to GPIO 4.
 
-#### Matter
+## Background
 
-Matter is an open standard for building smart home accessories, supported natively by many smart home ecosystems such as HomeKit. For more information about Matter, see the [Matter documentation](https://project-chip.github.io/connectedhomeip-doc/index.html).
+### Embedded Swift
 
-#### Additional Resources
+Embedded Swift is a subset of Swift designed for constrained environments such as embedded devices and kernel code. It includes most Swift language features — generics, value and reference types, optionals, error handling, and more — while introducing the safety and expressivity of Swift to environments usually dominated by C or C++. See [A Vision for Embedded Swift](https://github.com/swiftlang/swift-evolution/blob/main/visions/embedded-swift.md) for more information.
+
+### Matter
+
+Matter is an open standard for building smart home accessories, supported natively by ecosystems such as Apple HomeKit. See the [Matter documentation](https://project-chip.github.io/connectedhomeip-doc/index.html) for more information.
+
+### Additional Resources
 
 - [Embedded Swift User Manual](https://github.com/swiftlang/swift/blob/main/docs/EmbeddedSwift/UserManual.md)
 - [More Embedded Swift Example Projects](https://github.com/swiftlang/swift-embedded-examples)
-- [Swift Forums Embedded Discussion](https://forums.swift.org/c/development/embedded/107)
+- [Swift Forums — Embedded Discussion](https://forums.swift.org/c/development/embedded/107)
 
-## Getting Started
+## Requirements
 
-### Documentation
-
-For comprehensive tutorials with detailed instructions, please refer to the [**project documentation**](https://swiftlang.github.io/swift-matter-examples/tutorials/tutorial-table-of-contents).
-
-### Requirements
-
-Before running the examples, ensure you have the following tools available:
-
-- Hardware:
-  - [ESP32-C6-DevKitC-1-N8](https://docs.espressif.com/projects/espressif-esp-dev-kits/en/latest/esp32c6/esp32-c6-devkitc-1/user_guide.html)
-- Software
+- Hardware: [Waveshare ESP32-C6 Zero](https://www.waveshare.com/esp32-c6-zero.htm) (or any ESP32-C6 board)
+- Software:
   - [Swift Nightly Toolchain](https://www.swift.org/download)
   - [CMake 3.29+](https://cmake.org/download)
   - [ESP-IDF v5.4.1](https://docs.espressif.com/projects/esp-idf/en/v5.4.1/esp32c6/get-started/index.html)
   - [ESP-Matter SDK 1.2](https://docs.espressif.com/projects/esp-matter/en/latest/esp32c6/introduction.html)
 
-> [!IMPORTANT]
-> The examples are designed for an Espressif C6 Development Kit from both macOS and Linux host systems. Other configurations may work, but have not been tested.
+The examples are designed for macOS and Linux host systems.
 
-### Quick Start Guide
+## Quick Start
 
-> [!IMPORTANT]
-> We highly recommend following the provided [tutorials](https://swiftlang.github.io/swift-matter-examples/tutorials/tutorial-table-of-contents).
+1. Clone the repository and navigate to an example.
+   ```shell
+   git clone https://github.com/n2o/swift-matter-examples.git
+   cd swift-matter-examples/smart-light
+   ```
 
-Ensure your shell has access to the tools listed above, see [Get started on macOS](https://swiftlang.github.io/swift-matter-examples/tutorials/swiftmatterexamples/setup-macos) or [Get started on Linux with Docker](https://swiftlang.github.io/swift-matter-examples/tutorials/swiftmatterexamples/setup-docker) for additional setup instructions.
+2. Set the target microcontroller.
+   ```shell
+   idf.py set-target esp32c6
+   ```
 
-1. Clone the repository and navigate to one of the examples.
-  ```shell
-  $ git clone https://github.com/swiftlang/swift-matter-examples.git
-  $ cd swift-matter-examples/smart-light
-  ```
+3. Build and flash the application.
+   ```shell
+   idf.py build flash monitor
+   ```
 
-2. Configure the build system for your microcontroller, the `smart-light` example should also be runnable on `esp32c3`.
-  ```shell
-  $ idf.py set-target esp32c6
-  ```
-
-3. Build and deploy the application to your device.
-  ```shell
-  $ idf.py build flash monitor
-  ```
-
-Explore the implementation, see [Explore the LED Blink example](https://swiftlang.github.io/swift-matter-examples/tutorials/swiftmatterexamples/run-example-led-blink#Understand-the-code) and
-[Explore the Smart Light example](https://swiftlang.github.io/swift-matter-examples/tutorials/swiftmatterexamples/run-example-smart-light#Understand-the-code) for guided walkthroughs.
-
-## Contributing to Swift Matter Examples
-
-This repo is intended to demonstrate use of Embedded Swift for different applications, using Matter as an example. PRs demonstrating ways to adapt Swift's language or tooling to this application are welcome. It is not intended to be a full-featured Matter SDK so please do not raise PRs to extend the Matter Swift overlay to new areas.
-
-### Code of Conduct
-
-Like all Swift.org projects, we would like these Embedded Swift example projects to foster a diverse and friendly community. We expect contributors to adhere to the [Swift.org Code of Conduct](https://swift.org/code-of-conduct).
-
-### Contact information
-
-The current code owners of this repository are Kuba Mracek ([@kubamracek](https://github.com/kubamracek)), Rauhul Varma ([@rauhul](https://github.com/rauhul)), and Philippe Hausler (https://github.com/phausler). You can contact them on the Swift forums via the handles [@kubamracek](https://forums.swift.org/u/kubamracek/summary), [@rauhul](https://forums.swift.org/u/rauhul/summary), and [@Philippe_Hausler](https://forums.swift.org/u/philippe_hausler/summary).
-
-In case of moderation issues, you can also directly contact a member of the [Swift Core Team](https://swift.org/community/#community-structure).
+For initial environment setup, refer to the upstream tutorials for [macOS](https://swiftlang.github.io/swift-matter-examples/tutorials/swiftmatterexamples/setup-macos) or [Linux with Docker](https://swiftlang.github.io/swift-matter-examples/tutorials/swiftmatterexamples/setup-docker).

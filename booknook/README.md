@@ -1,63 +1,67 @@
-# Embedded Swift Matter Example: Smart Light example
+# BookNook Ambient Lighting
 
-This directory contains an example implementation of a Matter smart LED light accessory in Embedded Swift, and it can be built using the ESP IDF and ESP Matter SDKs, and uploaded to an ESP32C6 or ESP32C3 development board.
+A Matter/HomeKit-enabled ambient lighting controller for a decorative BookNook shelf insert, built with Embedded Swift on an ESP32-C6 (Waveshare ESP32-C6 Zero).
 
-Breakdown of the files included:
+## Overview
 
-- **CMakeLists.txt** — Top-level CMake configuration file for the example, similar to the ["light" example from the ESP Matter SDK](https://github.com/espressif/esp-matter/tree/main/examples/light), with the minimum CMake version increased to 3.29 as required by Swift.
-- **partitions.csv** — Partition table for the firmware. Same as the ["light" example from the ESP Matter SDK](https://github.com/espressif/esp-matter/tree/main/examples/light).
-- **README.md** — This documentation file.
-- **sdkconfig.defaults** — Compile-time settings for the ESP IDF. Same as the ["light" example from the ESP Matter SDK](https://github.com/espressif/esp-matter/tree/main/examples/light).
-- **main/** — Subdirectory with actual source files to build.
-  - **main/BridgingHeader.h** — A bridging header that imports C and C++ declarations from ESP IDF and ESP Matter SDKs into Swift.
-  - **main/CmakeLists.txt** — CMake configuration describing what files to build and how. This includes a lot of Embedded Swift specific logic (e.g. Swift compiler flags).
-  - **main/idf_component.yml** — Dependency list for the IDF Component Manager. Same as the ["light" example from the ESP Matter SDK](https://github.com/espressif/esp-matter/tree/main/examples/light).
-  - **main/LED.swift** — Implementation of a helper "LED" object in Embedded Swift.
-  - **main/Main.swift** — Main file with Embedded Swift application source code.
-- **Matter/** — Subdirectory with a simple (incomplete) Matter overlay to bridge C++ Matter APIs into Swift
-  - **Matter/Attribute.swift** — Low-level overlay code for Matter attributes.
-  - **Matter/Clusters.swift** — Low-level overlay code for Matter clusters.
-  - **Matter/Matter.swift** — High-level Matter overlay code.
-  - **Matter/MatterInterface.cpp** — Helper C++ code for interoperating with Matter C++ APIs.
-  - **Matter/MatterInterface.h** — Helper C++ code for interoperating with Matter C++ APIs.
-  - **Matter/Node.swift** — Low-level overlay code for Matter nodes.
+BookNooks are decorative miniature scenes that fit inside a bookshelf between books. This project adds smart home control to a commercially available BookNook kit whose LEDs were originally powered by 2x AAA batteries (3V) through a touch switch PCB.
 
-## Building and running the example
+The ESP32-C6 replaces the battery pack entirely, powers the LEDs directly from a GPIO pin, and exposes an On/Off switch to Apple Home via the Matter protocol.
 
-For full steps how to build the example code, follow the [Setup Your Environment](https://apple.github.io/swift-embedded/swift-matter-examples/tutorials/tutorial-table-of-contents#setup-your-environment) tutorials and the [Explore the Smart Light example](https://apple.github.io/swift-matter-examples/tutorials/swiftmatterexamples/run-example-smart-light) tutorial. In summary:
+## Hardware
 
-- Ensure your system has all the required software installed and your shell has access to the tools listed in the top-level README file.
-- Plug in the ESP32C6/C3 development board via a USB cable.
-- Have a set up HomeKit or other Matter-enabled smart home ecosystem.
-  - For HomeKit, this includes a configured home, a Wi-Fi network which additional devices can join, a [home hub](https://support.apple.com/en-us/102557), and an iOS device for managing the home.
+- **Board:** Waveshare ESP32-C6 Zero
+- **LEDs:** 4 small ambient LEDs, less than 20mA total draw, connected to GPIO 4
+- **Power:** LEDs driven directly from GPIO 4 (3.3V output, no MOSFET required)
+- **Status indicator:** Onboard WS2812 RGB LED on GPIO 8
 
-1. Activate the ESP-Matter environment. This makes tools like `idf.py` and `gn` available in your shell.
-  ```shell
-  $ source ~/esp/esp-matter/export.sh
-  ```
-  If you are using **fish shell**, use this instead:
-  ```shell
-  $ exec bash -c 'source ~/esp/esp-matter/export.sh && exec fish'
-  ```
+### Wiring
 
-2. Clone the repository and navigate to the `smart-light` example.
-  ```shell
-  $ git clone https://github.com/apple/swift-matter-examples.git
-  $ cd swift-matter-examples/smart-light
-  ```
+| Signal | GPIO | Wire color |
+|--------|------|------------|
+| LED +  | 4    | Red        |
+| LED -  | GND  | Black      |
 
-3. Configure the build system for your microcontroller, this example should also be runnable on `esp32c3`.
-  ```shell
-  $ idf.py set-target esp32c6
-  ```
+The original touch switch PCB and AAA battery holder are removed and replaced with this board.
 
-4. Build and deploy the application to your device.
-  ```shell
-  $ idf.py build flash monitor
-  ```
+## Software
 
-5. Register the device in your home network. See [Connect-using-Matter](https://apple.github.io/swift-matter-examples/tutorials/swiftmatterexamples/run-example-smart-light#Connect-using-Matter) for detailed pairing instructions with HomeKit.
+This project is based on the `smart-light` example from the swift-matter-examples repository. The application is written in Embedded Swift and communicates with ESP-IDF and the Matter SDK through C/C++ shims.
 
-6. You can now control the smart light. In case of a HomeKit network, the Home app, and Siri can both be used to turn the light on, off, change colors, etc.
+### File Structure
 
-7. Explore the implementation, see [Understand the code](https://apple.github.io/swift-matter-examples/tutorials/swiftmatterexamples/run-example-smart-light#Understand-the-code) for a guided walkthrough.
+```
+booknook/
+  main/
+    Main.swift              Entry point, GPIO initialisation, Matter event handler
+    LED.swift               Onboard WS2812 LED driver wrapper
+    BridgingHeader.h        C/C++ header imports exposed to Swift
+  Matter/
+    MatterInterface.cpp     C++ shims including booknook GPIO helper functions
+    Node, Clusters, ...     Matter protocol overlay (Swift)
+```
+
+### GPIO Shim
+
+Embedded Swift does not reliably pass ESP-IDF GPIO enum types across the language boundary. For this reason, GPIO control for the BookNook LEDs is handled through two C shim functions defined in `Matter/MatterInterface.cpp`:
+
+- `booknook_gpio_init()` — configures GPIO 4 as an output
+- `booknook_gpio_set(bool on)` — drives GPIO 4 high or low
+
+Swift calls these functions directly rather than invoking the ESP-IDF GPIO API itself.
+
+## Building and Flashing
+
+Prerequisites: ESP-IDF and the swift-matter-examples toolchain set up as described in the repository root README.
+
+```sh
+cd booknook
+idf.py set-target esp32c6
+idf.py build flash monitor
+```
+
+## Usage
+
+After flashing, commission the device into Apple Home using the Matter pairing code printed to the serial monitor. The BookNook LEDs are then controllable as an On/Off light accessory from the Home app, Siri, or any Matter-compatible controller.
+
+The onboard RGB LED reflects the device status during commissioning and normal operation.
