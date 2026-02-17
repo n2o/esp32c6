@@ -23,6 +23,21 @@ esp_matter::attribute_t *esp_matter::attribute::get_shim(esp_matter::cluster_t *
   return get(cluster, (uint32_t)attribute_id);
 }
 
+extern "C" void booknook_gpio_init(int pin) {
+  gpio_config_t io_conf = {};
+  io_conf.pin_bit_mask = (1ULL << pin);
+  io_conf.mode = GPIO_MODE_OUTPUT;
+  io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  io_conf.intr_type = GPIO_INTR_DISABLE;
+  gpio_config(&io_conf);
+  gpio_set_level((gpio_num_t)pin, 1);
+}
+
+extern "C" void booknook_gpio_set(int pin, int level) {
+  gpio_set_level((gpio_num_t)pin, level);
+}
+
 void recomissionFabric() {
   if (chip::Server::GetInstance().GetFabricTable().FabricCount() == 0) {
     chip::CommissioningWindowManager & commissionMgr = chip::Server::GetInstance().GetCommissioningWindowManager();

@@ -30,3 +30,7 @@ namespace esp_matter {
 // Recomissioning causes failures with reference semantics so this is done as a function implemented in C++.
 // Ideally this would be done by changing some of the headers in ESP Matter to have proper Swift annotations.
 void recomissionFabric();
+
+// GPIO shims for BookNook LEDs
+extern "C" void booknook_gpio_init(int pin);
+extern "C" void booknook_gpio_set(int pin, int level);

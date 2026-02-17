@@ -15,9 +15,10 @@ func main() {
 
   let led = LED()
 
-  // GPIO for BookNook LEDs
-  let bookNookPin = GPIO_NUM_4
-  gpio_set_direction(bookNookPin, GPIO_MODE_OUTPUT)
+  // GPIO for BookNook LEDs (using C shim for reliable GPIO control)
+  let bookNookGpioPin: Int32 = 4
+  booknook_gpio_init(bookNookGpioPin)
+  print("BookNook GPIO ready")
 
   // (1) Create a Matter root node
   let rootNode = Matter.Node()
@@ -31,7 +32,7 @@ func main() {
     switch event.attribute {
     case .onOff:
       led.enabled = (event.value == 1)
-      gpio_set_level(bookNookPin, event.value == 1 ? 1 : 0)
+      booknook_gpio_set(bookNookGpioPin, event.value == 1 ? 1 : 0)
 
     case .levelControl:
       led.brightness = Int(Float(event.value) / 255.0 * 100.0)
