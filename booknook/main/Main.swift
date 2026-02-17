@@ -37,6 +37,19 @@ func main() {
     case .levelControl:
       led.brightness = Int(Float(event.value) / 255.0 * 100.0)
 
+    case .colorControl(.currentHue):
+      let newHue = Int(Float(event.value) / 255.0 * 360.0)
+      led.color = .hueSaturation(newHue, led.color.saturation)
+
+    case .colorControl(.currentSaturation):
+      let newSaturation = Int(Float(event.value) / 255.0 * 100.0)
+      led.color = .hueSaturation(led.color.hue, newSaturation)
+
+    case .colorControl(.colorTemperatureMireds):
+      let kelvins = 1_000_000 / event.value
+      led.color = .temperature(kelvins)
+
+
     default:
       break
     }
