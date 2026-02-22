@@ -14,9 +14,10 @@ func main() {
   print("BookNook Light")
 
   let led = LED()
+  let seeedLed = SeeedLED()
 
   // GPIO for BookNook LEDs (using C shim for reliable GPIO control)
-  let bookNookGpioPin: Int32 = 4
+  let bookNookGpioPin: Int32 = 0
   booknook_gpio_init(bookNookGpioPin)
   print("BookNook GPIO ready")
 
@@ -32,6 +33,7 @@ func main() {
     switch event.attribute {
     case .onOff:
       led.enabled = (event.value == 1)
+      seeedLed.enabled = (event.value == 1)
       booknook_gpio_set(bookNookGpioPin, event.value == 1 ? 1 : 0)
 
     case .levelControl:
