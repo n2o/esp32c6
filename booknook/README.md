@@ -1,6 +1,6 @@
 # BookNook Ambient Lighting
 
-A Matter/HomeKit-enabled ambient lighting controller for a decorative BookNook shelf insert, built with Embedded Swift on an ESP32-C6 (Waveshare ESP32-C6 Zero).
+A Matter/HomeKit-enabled ambient lighting controller for a decorative BookNook shelf insert, built with Embedded Swift on an ESP32-C6.
 
 ## Overview
 
@@ -10,16 +10,17 @@ The ESP32-C6 replaces the battery pack entirely, powers the LEDs directly from a
 
 ## Hardware
 
-- **Board:** Waveshare ESP32-C6 Zero
-- **LEDs:** 4 small ambient LEDs, less than 20mA total draw, connected to GPIO 4
-- **Power:** LEDs driven directly from GPIO 4 (3.3V output, no MOSFET required)
-- **Status indicator:** Onboard WS2812 RGB LED on GPIO 8
+- **Board:** Seeed Studio XIAO ESP32-C6
+- **LEDs:** 4 small ambient LEDs, less than 20mA total draw, connected to GPIO 0
+- **Power:** LEDs driven directly from GPIO 0 (3.3V output, no MOSFET required)
+- **Status indicator:** Onboard user LED on GPIO 15 (active LOW)
+- **Commissioning:** Matter over Thread (802.15.4), requires a Thread Border Router (e.g. Apple HomePod mini, Apple TV 4K)
 
 ### Wiring
 
 | Signal | GPIO | Wire color |
 |--------|------|------------|
-| LED +  | 4    | Red        |
+| LED +  | 0    | Red        |
 | LED -  | GND  | Black      |
 
 The original touch switch PCB and AAA battery holder are removed and replaced with this board.
@@ -33,11 +34,12 @@ This project is based on the `smart-light` example from the swift-matter-example
 ```
 booknook/
   main/
-    Main.swift              Entry point, GPIO initialisation, Matter event handler
-    LED.swift               Onboard WS2812 LED driver wrapper
+    Main.swift              Entry point, GPIO init, Matter event handler
+    LED.swift               WS2812 LED driver wrapper (no-op on XIAO)
+    SeeedLED.swift          XIAO onboard user LED driver (GPIO 15)
     BridgingHeader.h        C/C++ header imports exposed to Swift
   Matter/
-    MatterInterface.cpp     C++ shims including booknook GPIO helper functions
+    MatterInterface.cpp     C++ shims: GPIO helpers, OpenThread platform config
     Node, Clusters, ...     Matter protocol overlay (Swift)
 ```
 
@@ -45,8 +47,9 @@ booknook/
 
 Embedded Swift does not reliably pass ESP-IDF GPIO enum types across the language boundary. For this reason, GPIO control for the BookNook LEDs is handled through two C shim functions defined in `Matter/MatterInterface.cpp`:
 
-- `booknook_gpio_init()` — configures GPIO 4 as an output
-- `booknook_gpio_set(bool on)` — drives GPIO 4 high or low
+- `booknook_gpio_init()` -- configures a GPIO pin as output
+- `booknook_gpio_set()` -- drives a GPIO pin high or low
+- `booknook_openthread_init()` -- sets up OpenThread platform config for Thread commissioning
 
 Swift calls these functions directly rather than invoking the ESP-IDF GPIO API itself.
 
@@ -62,6 +65,6 @@ idf.py build flash monitor
 
 ## Usage
 
-After flashing, commission the device into Apple Home using the Matter pairing code printed to the serial monitor. The BookNook LEDs are then controllable as an On/Off light accessory from the Home app, Siri, or any Matter-compatible controller.
+After flashing, commission the device into Apple Home using the Matter pairing code printed to the serial monitor. A Thread Border Router (HomePod mini, HomePod 2nd gen, or Apple TV 4K) is required on your network. The BookNook LEDs are then controllable as a light accessory from the Home app, Siri, or any Matter-compatible controller.
 
-The onboard RGB LED reflects the device status during commissioning and normal operation.
+The onboard LED on the XIAO board lights up when the device is switched on.

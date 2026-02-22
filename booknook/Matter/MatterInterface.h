@@ -34,3 +34,6 @@ void recomissionFabric();
 // GPIO shims for BookNook LEDs
 extern "C" void booknook_gpio_init(int pin);
 extern "C" void booknook_gpio_set(int pin, int level);
+
+// OpenThread platform config shim (must be called before Matter start)
+extern "C" void booknook_openthread_init(void);

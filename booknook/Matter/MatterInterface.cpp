@@ -38,6 +38,33 @@ extern "C" void booknook_gpio_set(int pin, int level) {
   gpio_set_level((gpio_num_t)pin, level);
 }
 
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#include <esp_openthread.h>
+#include <esp_openthread_types.h>
+#include <platform/ESP32/OpenthreadLauncher.h>
+
+// Default macros from ESP-IDF OpenThread examples
+#define BOOKNOOK_OT_RADIO_CONFIG() \
+    { .radio_mode = RADIO_MODE_NATIVE, }
+
+#define BOOKNOOK_OT_HOST_CONFIG() \
+    { .host_connection_mode = HOST_CONNECTION_MODE_NONE, }
+
+#define BOOKNOOK_OT_PORT_CONFIG() \
+    { .storage_partition_name = "nvs", .netif_queue_size = 10, .task_queue_size = 10, }
+#endif
+
+extern "C" void booknook_openthread_init(void) {
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+  esp_openthread_platform_config_t config = {
+    .radio_config = BOOKNOOK_OT_RADIO_CONFIG(),
+    .host_config = BOOKNOOK_OT_HOST_CONFIG(),
+    .port_config = BOOKNOOK_OT_PORT_CONFIG(),
+  };
+  set_openthread_platform_config(&config);
+#endif
+}
+
 void recomissionFabric() {
   if (chip::Server::GetInstance().GetFabricTable().FabricCount() == 0) {
     chip::CommissioningWindowManager & commissionMgr = chip::Server::GetInstance().GetCommissioningWindowManager();

@@ -11,7 +11,7 @@
 
 @_cdecl("app_main")
 func main() {
-  print("BookNook Light")
+  print("BookNook Light v1.1.0")
 
   let led = LED()
   let seeedLed = SeeedLED()
@@ -60,7 +60,10 @@ func main() {
   // (3) Add the endpoint to the node
   rootNode.addEndpoint(lightEndpoint)
 
-  // (4) Provide the node to a Matter application and start it
+  // (4) Initialize OpenThread platform config (required for Thread commissioning)
+  booknook_openthread_init()
+
+  // (5) Provide the node to a Matter application and start it
   let app = Matter.Application()
   app.rootNode = rootNode
   app.start()
